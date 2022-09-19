@@ -86,8 +86,29 @@ const Spheres = ({ z }) => {
         />
     )
 }
+
+function Rig({ children }) {
+    const ref = useRef()
+    const vec = new THREE.Vector3()
+    const { camera, pointer } = useThree()
+    console.log(pointer)
+    useFrame(() => {
+        camera.position.lerp(vec.set(pointer.x * 15, pointer.y * 15, 3), 0.05)
+        ref.current.position.lerp(
+            vec.set(pointer.x * 2, pointer.y * 3, 0.01),
+            0.1
+        )
+        // camera.position.lerp(vec.set(mouse.x * 3, 0, 3.5), 0.005)
+        // ref.current.position.lerp(
+        //     vec.set(pointer.x * 3, pointer.y * 0.2, 0),
+        //     0.1
+        // )
+    })
+    return <group ref={ref}>{children}</group>
+}
+
 const Text = () => {
-    // const meshRef = useRef(null)
+    const textRef = useRef(null)
     // // parse fontface json with Three.js
     // const font = new FontLoader().parse(woof)
     // // config the font geometry
@@ -122,6 +143,7 @@ const Text = () => {
     return (
         <Center>
             <Text3D
+                ref={textRef}
                 font={woof}
                 lineHeight={0.5}
                 size={0.5}
@@ -140,7 +162,7 @@ const Text = () => {
     )
 }
 
-export const App = ({ count = 1000, depth = 100 }) => {
+export const App = ({ count = 100, depth = 200 }) => {
     return (
         <Canvas
             gl={{ alpha: false }}
@@ -148,28 +170,30 @@ export const App = ({ count = 1000, depth = 100 }) => {
             shadows
             dpr={[1, 2]}
         >
-            <color attach='background' args={['#434343']} />
-            <spotLight position={[10, 10, 10]} intensity={0.5} />
-            <OrbitControls
-                enableZoom={true}
-                // zoomSpeed={2.0}
-                enablePan={true}
-                minPolarAngle={Math.PI / 2}
-                maxPolarAngle={Math.PI / 2}
-                // autoRotateSpeed={1.0}
-                enableDamping={true}
-                dampingFactor={0.3}
-            />
-            <Environment preset='sunset' />
-            <Suspense fallback={null}>
-                <Text />
-                {Array.from({ length: count }, (_, i) => (
-                    <>
-                        <Donuts key={i} z={-i} scale={0.5} />
-                        <Spheres key={i} z={-i} scale={0.01} />
-                    </>
-                ))}
-            </Suspense>
+            <Rig>
+                <color attach='background' args={['#434343']} />
+                <spotLight position={[10, 10, 10]} intensity={0.5} />
+                <OrbitControls
+                // enableZoom={true}
+                // // zoomSpeed={2.0}
+                // enablePan={true}
+                // minPolarAngle={Math.PI / 2}
+                // maxPolarAngle={Math.PI / 2}
+                // // autoRotateSpeed={1.0}
+                // enableDamping={true}
+                // dampingFactor={0.3}
+                />
+                <Environment preset='sunset' />
+                <Suspense fallback={null}>
+                    <Text />
+                    {Array.from({ length: count }, (_, i, idx) => (
+                        <>
+                            <Donuts key={i + 'donuts'} z={-i} scale={0.3} />
+                            <Spheres key={i + 'spheres'} z={-i} scale={0.01} />
+                        </>
+                    ))}
+                </Suspense>
+            </Rig>
         </Canvas>
     )
 }
